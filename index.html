@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Prompt & LLM Tool</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="logo1.png">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+    
+    <header class="border-b border-slate-200 bg-white/80 backdrop-blur sticky 
+    top-0 z-30 px-6 py-4 flex flex-wrap justify-between items-center gap-4 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 
+            to-violet-600 flex items-center justify-center shadow-md shadow-indigo-200">
+                <a href="#" class="flex items-center gap-2">
+                    <img src="logo.png.png" alt="Davecode Logo" class="h-16 w-auto object-contain">
+                </a>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">LLM Workflow Studio</h1>
+                <p class="text-xs text-slate-500">JSON Prompt & Schema Engine</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button id="clearHistoryBtn" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition">Clear History</button>
+           
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Panel: Input & Workflow Config (5 Cols) -->
+        <section class="lg:col-span-5 flex flex-col space-y-5 bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+            <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                <span class="h-2 w-2 rounded-full bg-indigo-600"></span> Workflow Configuration
+            </h2>
+
+            <!-- API Key Input -->
+            <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1.5">API Key</label>
+                <div class="relative">
+                    <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Stored securely </p>
+            </div>
+
+            <!-- Workflow Preset Selector -->
+            <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1.5">Select Structured Schema Preset</label>
+                <select id="presetSelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white transition">
+                    <option value="maintenance">🔧 Technical Failure Analysis (Industrial Logs)</option>
+                    <option value="codebug">💻 Code Bug & Fix Parser</option>
+                    <option value="invoice">📦 Invoice & Document Data Extractor</option>
+                </select>
+            </div>
+
+            <!-- Raw Prompt / Data Input -->
+            <div class="flex-1 flex flex-col">
+                <label class="block text-xs font-medium text-slate-600 mb-1.5">Input Text / Context</label>
+                <textarea id="rawInputText" rows="7" placeholder="Paste raw unstructured notes, logs, or text here..." 
+                class="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:bg-white
+                 transition resize-none"></textarea>
+            </div>
+
+            <!-- Execute Button -->
+            <button id="runWorkflowBtn" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500
+             hover:to-violet-500 text-white font-semibold text-sm shadow-md shadow-indigo-100 transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                Execute Structured Workflow
+            </button>
+        </section>
+
+        <!-- Right Panel: Results & Modular Output Cards (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col space-y-5 bg-white border border-slate-200/80 rounded-2xl p-5 
+        shadow-sm">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Structured Output & Parsed Schema
+                </h2>
+                <div class="flex space-x-2">
+                    <button id="tabCardView" class="px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white transition shadow-sm">Card View</button>
+                    <button id="tabJsonView" class="px-3 py-1 text-xs font-medium rounded-lg bg-slate-100 text-slate-600 hover:text-slate-900 transition">Raw JSON</button>
+                </div>
+            </div>
+
+            <!-- Output Container -->
+            <div id="outputContainer" class="flex-1 min-h-[400px] flex flex-col justify-center items-center text-center p-6 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                <div class="text-slate-400 space-y-2">
+                    <svg class="w-12 h-12 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <p class="text-sm font-medium text-slate-600">No workflow executed yet.</p>
+                    <p class="text-xs text-slate-400">Enter your API key, select a preset, paste your text, and click execute.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom Modal for Alerts/Prompts -->
+    <div id="customModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
+            <h3 id="modalTitle" class="text-lg font-bold text-slate-900">Notice</h3>
+            <p id="modalMessage" class="text-sm text-slate-600"></p>
+            <div class="flex justify-end pt-2">
+                <button id="modalCloseBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl transition shadow-sm">Got It</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript File -->
+    <script src="app.js"></script>
+</body>
+</html>
