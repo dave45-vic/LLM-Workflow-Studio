@@ -1,6 +1,4 @@
-// Application Logic for Interactive Prompt & LLM Tool
 
-// Preset Schemas and Sample Prompts
 const workflowPresets = {
     maintenance: {
         title: "Technical Failure Analysis",
@@ -38,11 +36,11 @@ const workflowPresets = {
     }
 };
 
-// State management
-let currentResultData = null;
-let activeView = 'card'; // 'card' or 'json'
 
-// DOM Elements
+let currentResultData = null;
+let activeView = 'card'; 
+
+
 const apiKeyInput = document.getElementById('apiKeyInput');
 const presetSelect = document.getElementById('presetSelect');
 const rawInputText = document.getElementById('rawInputText');
@@ -56,18 +54,18 @@ const modalTitle = document.getElementById('modalTitle');
 const modalMessage = document.getElementById('modalMessage');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 
-// Initialize App
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Load saved API key if available
+    
     const savedKey = localStorage.getItem('gemini_api_key');
     if (savedKey) {
         apiKeyInput.value = savedKey;
     }
 
-    // Set initial preset sample text
+    
     updatePresetSample();
 
-    // Event Listeners
+
     apiKeyInput.addEventListener('input', () => {
         localStorage.setItem('gemini_api_key', apiKeyInput.value.trim());
     });
@@ -80,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalCloseBtn.addEventListener('click', closeModal);
 });
 
-// Load sample input based on chosen preset
+
 function updatePresetSample() {
     const selected = presetSelect.value;
     if (workflowPresets[selected]) {
@@ -88,7 +86,7 @@ function updatePresetSample() {
     }
 }
 
-// Show custom modal alert
+
 function showModal(title, message) {
     modalTitle.textContent = title;
     modalMessage.textContent = message;
@@ -99,7 +97,7 @@ function closeModal() {
     customModal.classList.add('hidden');
 }
 
-// Clear results
+
 function clearOutput() {
     currentResultData = null;
     outputContainer.innerHTML = `
@@ -111,7 +109,7 @@ function clearOutput() {
     `;
 }
 
-// Switch view tabs
+
 function switchView(view) {
     activeView = view;
     if (view === 'card') {
@@ -127,7 +125,7 @@ function switchView(view) {
     }
 }
 
-// Execute Gemini API Request with Strict JSON Schema
+
 async function executeWorkflow() {
     const apiKey = apiKeyInput.value.trim();
     const rawText = rawInputText.value.trim();
@@ -145,7 +143,7 @@ async function executeWorkflow() {
 
     const preset = workflowPresets[presetKey];
 
-    // Show loading spinner state
+   
     outputContainer.innerHTML = `
         <div class="flex flex-col items-center justify-center space-y-3 py-12">
             <div class="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
@@ -153,7 +151,7 @@ async function executeWorkflow() {
         </div>
     `;
 
-    // Construct prompt enforcing strict JSON output
+   
     const prompt = `You are a precise data extraction and transformation engine. 
 Analyze the following unstructured input text and extract information according to the requested schema.
 
@@ -166,7 +164,7 @@ ${rawText}
 """`;
 
     try {
-        // NEW UPDATED CODE:
+       
 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
         
         const response = await fetch(endpoint, {
@@ -175,7 +173,7 @@ const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
-                    responseMimeType: "application/json" // Enforces strict JSON output from Gemini
+                    responseMimeType: "application/json"
                 }
             })
         });
@@ -188,7 +186,7 @@ const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini
         const data = await response.json();
         const jsonString = data.candidates[0].content.parts[0].text;
         
-        // Parse the structured JSON response
+       
         currentResultData = JSON.parse(jsonString);
         renderOutput(currentResultData);
 
@@ -202,7 +200,7 @@ const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini
     }
 }
 
-// Render Modular UI Cards or Raw JSON
+
 function renderOutput(jsonData) {
     if (activeView === 'json') {
         outputContainer.innerHTML = `
@@ -213,7 +211,7 @@ function renderOutput(jsonData) {
         return;
     }
 
-    // Card View: Build dynamic modular UI components based on keys
+  
     let cardsHtml = `<div class="w-full text-left space-y-3 max-h-[500px] overflow-y-auto pr-1">`;
     
     for (const [key, value] of Object.entries(jsonData)) {
@@ -226,7 +224,7 @@ function renderOutput(jsonData) {
             displayVal = `<p class="text-sm font-medium text-slate-800 mt-0.5">${escapeHtml(String(value))}</p>`;
         }
 
-        // Highlight severity or critical fields if present
+      
         let badgeClass = "bg-slate-100 border-slate-200 text-slate-700";
         if (key.toLowerCase().includes('severity')) {
             const valLower = String(value).toLowerCase();
@@ -249,12 +247,11 @@ function renderOutput(jsonData) {
     outputContainer.innerHTML = cardsHtml;
 }
 
-// Helper to prevent HTML injection
-// CORRECTED:
+
 function escapeHtml(str) {
     return str.replace(/&/g, "&amp;")
               .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")             // <--- Fixed with quotes
+              .replace(/>/g, "&gt;")             
               .replace(/"/g, "&quot;")
               .replace(/'/g, "&#039;");
 }
